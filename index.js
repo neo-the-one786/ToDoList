@@ -1,65 +1,48 @@
 import express from "express";
 import bodyParser from "body-parser";
-import pg from "pg";
 
 const app = express();
 const port = 3000;
 
-app.use(bodyParser.urlencoded({extended: true}));
+app.set("view engine", "ejs");
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-const db = new pg.Client({
-    user: "postgres",
-    host: "localhost",
-    database: "todolist",
-    password: "Charlesbabbage123@",
-    port: 5432
-});
-db.connect();
+let items = [
+    { id: 1, title: "Buy milk" },
+    { id: 2, title: "Finish homework" },
+];
+let nextId = 3;
 
-app.get("/", async (req, res) => {
-    try {
-        const result = await db.query("select * from items");
-        let items = [];
-        items = result.rows;
-        res.render("index.ejs", {
-            listTitle: "This day",
-            listItems: items
-        });
-    } catch (e) {
-        console.log(e);
-    }
+app.get("/", (req, res) => {
+    res.render("index", {
+        listTitle: "Today",
+        listItems: items,
+    });
 });
 
-app.post("/add", async (req, res) => {
-    const input = req.body.newItem;
-    try {
-        await db.query("insert into items (title) values ($1);", [input]);
-        res.redirect("/");
-    } catch (e) {
-        console.log(e);
+app.post("/add", (req, res) => {
+    const item = req.body.newItem;
+    if (item && item.trim() !== "") {
+        items.push({ id: nextId++, title: item.trim() });
     }
+    res.redirect("/");
 });
 
-app.post("/edit", async (req, res) => {
-    const title = req.body.updatedItemTitle;
-    const id = req.body.updatedItemID;
-    try {
-        await db.query("update items set title = ($1) where id = $2", [title, id]);
-        res.redirect("/");
-    } catch (e) {
-        console.log(e);
+app.post("/edit", (req, res) => {
+    const id = parseInt(req.body.updatedItemId);
+    const newTitle = req.body.updatedItemTitle;
+    const item = items.find(i => i.id === id);
+    if (item && newTitle && newTitle.trim() !== "") {
+        item.title = newTitle.trim();
     }
+    res.redirect("/");
 });
 
-app.post("/delete", async (req, res) => {
-    const id = req.body.deleteItemID;
-    try {
-        await db.query("delete from items where id = $1", [id]);
-        res.redirect("/");
-    } catch (e) {
-        console.log(e);
-    }
+app.post("/delete", (req, res) => {
+    const id = parseInt(req.body.deleteItemId);
+    items = items.filter(i => i.id !== id);
+    res.redirect("/");
 });
 
 app.listen(port, () => {
