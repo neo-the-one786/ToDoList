@@ -9,7 +9,7 @@
     <% for(let item of listItems){ %>
         <div class="item">
             <form action="/delete" method="post">
-                <input type="checkbox" onchange="this.form.submit()" name="deleteItemID" value="<%= item.id %>">
+                <input type="checkbox" onchange="this.form.submit()" name="deleteItemId" value="<%= item.id %>">
             </form>
 
             <p id="title<%= item.id %>">
@@ -17,7 +17,7 @@
             </p>
 
             <form class="edit" action="/edit" method="post">
-                <input type="hidden" name="updatedItemID" value="<%= item.id %>">
+                <input type="hidden" name="updatedItemId" value="<%= item.id %>">
                 <input id="input<%= item.id %>" type="text" name="updatedItemTitle" value="<%= item.title %>"
                        autocomplete="off"
                        autofocus="true" hidden="true"/>
